@@ -2,6 +2,7 @@
 
 PYTHON_DOWNLOAD_URL=https://www.python.org/ftp/python
 CPYTHON_VERSIONS="2.7.15 3.4.9 3.5.6 3.6.6 3.7.0"
+PYTHON_SHARED=1
 
 # openssl version to build, with expected sha256 hash of .tar.gz
 # archive.

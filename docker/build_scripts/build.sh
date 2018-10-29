@@ -123,13 +123,13 @@ build_cpythons $CPYTHON_VERSIONS
 PY36_BIN=/opt/python/cp36-cp36m/bin
 
 # Install certifi and auditwheel
-$PY36_BIN/pip install --require-hashes -r $MY_DIR/py36-requirements.txt
+LD_LIBRARY_PATH=/opt/python/cp36-cp36m/lib $PY36_BIN/pip install --require-hashes -r $MY_DIR/py36-requirements.txt
 
 # Our openssl doesn't know how to find the system CA trust store
 #   (https://github.com/pypa/manylinux/issues/53)
 # And it's not clear how up-to-date that is anyway
 # So let's just use the same one pip and everyone uses
-ln -s $($PY36_BIN/python -c 'import certifi; print(certifi.where())') \
+ln -s $(LD_LIBRARY_PATH=/opt/python/cp36-cp36m/lib $PY36_BIN/python -c 'import certifi; print(certifi.where())') \
       /opt/_internal/certs.pem
 # If you modify this line you also have to modify the versions in the
 # Dockerfiles:
@@ -178,11 +178,13 @@ find /opt/_internal -depth \
   -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) | xargs rm -rf
 
 for PYTHON in /opt/python/*/bin/python; do
+    bindir="$(dirname "$PYTHON")"
+    rootdir="$(dirname "$bindir")"
     # Smoke test to make sure that our Pythons work, and do indeed detect as
     # being manylinux compatible:
-    $PYTHON $MY_DIR/manylinux1-check.py
+    LD_LIBRARY_PATH=$rootdir/lib $PYTHON $MY_DIR/manylinux1-check.py
     # Make sure that SSL cert checking works
-    $PYTHON $MY_DIR/ssl-check.py
+    LD_LIBRARY_PATH=$rootdir/lib $PYTHON $MY_DIR/ssl-check.py
 done
 
 # Fix libc headers to remain compatible with C99 compilers.
